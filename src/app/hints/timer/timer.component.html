@@ -1,0 +1,8 @@
+<div
+  class="ring-active" 
+  [hidden]="getIsToHide()">
+  <p>
+    <span [class.start-animation]="getIsStartAnimation()">:</span>
+    {{getRemainingTime()}}
+  </p>
+</div>

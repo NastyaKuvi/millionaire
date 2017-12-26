@@ -1,0 +1,9 @@
+
+<form class="hall-form">
+  <p>Поднимите табличку в соответсвии с правильным вариантом ответа:</p>
+  <div class="colored-tab" *ngFor="let data of getDataSet()"
+    [style.background-image]="getBackgroundImage(data)"
+    [style.box-shadow]="getBoxShadow(data)">
+    <p>{{data.answer}}</p>
+  </div>
+</form>
