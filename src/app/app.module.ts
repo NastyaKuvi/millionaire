@@ -7,13 +7,16 @@ import { TimerComponent } from './hints/timer/timer.component';
 import { TimerService } from './hints/timer/timer.service';
 import { HallAssistanceComponent } from './hints/hall-assistance/hall-assistance.component';
 import { HallAssistanceService } from './hints/hall-assistance/hall-assistance.service';
+import { StartGameComponent } from './start-game/start-game.component';
+import { StartGameService } from './start-game/start-game.service';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     TimerComponent,
-    HallAssistanceComponent
+    HallAssistanceComponent,
+    StartGameComponent
   ],
   imports: [
     BrowserModule
@@ -22,7 +25,9 @@ import { HallAssistanceService } from './hints/hall-assistance/hall-assistance.s
     TimerService,
     TimerComponent,
     HallAssistanceComponent,
-    HallAssistanceService
+    HallAssistanceService,
+    StartGameComponent,
+    StartGameService
   ],
   bootstrap: [AppComponent]
 })

@@ -1,3 +1,4 @@
+<app-start-game *ngIf="!isTimeToPlay"></app-start-game>
 <div class="main">
   <div class="content">
     <app-timer *ngIf="IsTimerToShow"></app-timer>
@@ -15,7 +16,7 @@
     </div>
     <div class="level">
       <ol reversed>
-        <li class="prize" *ngFor="let prize of prizes">{{prize}}</li>
+        <li class="prize" [class.current]="getIsCurrentPrize(prize)" *ngFor="let prize of prizes">{{prize}}</li>
       </ol>
     </div>
   </div>
