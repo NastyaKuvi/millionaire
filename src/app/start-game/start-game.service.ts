@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { AudioService } from '../audio.service';
 
 var game1 = require('../resource/game1.json');
 var game2 = require('../resource/game2.json');
@@ -10,7 +11,10 @@ var game4 = require('../resource/game4.json');
 export class StartGameService {
 
   game$: BehaviorSubject<any> = new BehaviorSubject<any>({});
-  constructor() { }
+  constructor(
+    private audioService: AudioService
+  ) { }
+
   setGame(curGame: any) {
     this.game$.next(curGame);
   }
@@ -34,5 +38,6 @@ export class StartGameService {
         break;
       }
     }
+    this.audioService.playMainFirstAudio();
   }
 }

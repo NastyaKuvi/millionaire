@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Subscription, Observable } from 'rxjs';
+import { AudioService } from '../../audio.service';
 
 @Injectable()
 export class TimerService {
@@ -11,6 +12,7 @@ export class TimerService {
   timerStarted: boolean = false;
   timerStopped: boolean = false;
   constructor(
+    private audioService: AudioService
   ) {
    }
 
@@ -26,8 +28,9 @@ export class TimerService {
    }
 
    startTimer() {
-    let timer = Observable.timer(1, 1000);
-    this.sub = timer.subscribe(
+     this.audioService.playHintCallAudio();
+     let timer = Observable.timer(1, 1000);
+     this.sub = timer.subscribe(
         t => {
           this.timerStarted = true;
           this.timerStopped = false;
@@ -46,6 +49,7 @@ export class TimerService {
     this.timerStopped = true;
     this.timerStarted = false;
     this.sub.unsubscribe();
+    this.audioService.playMainAudio();
   }
 
   getRemainingTime() {

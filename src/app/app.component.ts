@@ -4,25 +4,8 @@ import { element } from 'protractor';
 import { TimerService } from './hints/timer/timer.service';
 import { HallAssistanceService } from './hints/hall-assistance/hall-assistance.service';
 import { StartGameService } from './start-game/start-game.service';
-
-export class QuestionGroup {
-  num: number;
-  question: string;
-  answer1: string;
-  answer2:string;
-  answer3:string;
-  answer4:string;
-  rightAnswer: number;
-  constructor() {
-    this.num = 0;
-    this.question = '';
-    this.answer1 = '';
-    this.answer2 = '';
-    this.answer3 = '';
-    this.answer4 = '';
-    this.rightAnswer = 0;
-  }
-};
+import { QuestionGroup } from './exportClasses';
+import { AudioService } from './audio.service';
 
 @Component({
   selector: 'app-root',
@@ -49,7 +32,8 @@ export class AppComponent implements OnInit, AfterViewInit{
   constructor(
     private timer: TimerService,
     private hallService: HallAssistanceService,
-    private startService: StartGameService
+    private startService: StartGameService,
+    private audioService: AudioService
   ) {
     this.startService.game$.subscribe((game)=> {
       if(Object.keys(game).length == 0) {
@@ -80,6 +64,7 @@ export class AppComponent implements OnInit, AfterViewInit{
   }
 
   ngOnInit() {
+    this.audioService.initAudioService();
   }
 
   ngAfterViewInit() {
@@ -144,6 +129,7 @@ export class AppComponent implements OnInit, AfterViewInit{
       case " ": {
         this.isToShowGameOverForm = false;
         this.isTimeToPlay = false;
+        this.audioService.playBeforeStartAudio();
       }
     }
   }
@@ -170,6 +156,7 @@ export class AppComponent implements OnInit, AfterViewInit{
 
   callPeopleHint() {
     this.IsHallToShow = true;
+    this.audioService.playHintHallAudio();
   }
 
   callRingHint() {
@@ -184,6 +171,12 @@ export class AppComponent implements OnInit, AfterViewInit{
     else if (this.canContinue) {
       this.setNextQuestionGroup(this.game.questions[this.questionGroup.num], this.questionGroup.num + 1);
       this.canContinue = false;
+      if (this.questionGroup.num < 11) {
+        this.audioService.playMainFirstAudio();
+      }
+      else {
+        this.audioService.playMainSecondAudio();
+      }
     }
   }
 
@@ -231,6 +224,7 @@ export class AppComponent implements OnInit, AfterViewInit{
           elem.classList.remove('selected');
         }
       }
+      this.audioService.playAnsweredAudio();
     }
   }
 
@@ -244,6 +238,7 @@ export class AppComponent implements OnInit, AfterViewInit{
     }
     else if (this.IsHallToShow) {
       this.IsHallToShow = false;
+      this.audioService.playMainAudio();
     }
     else if (this.canContinue) {
       this.goToTheNextQuestion();
@@ -255,11 +250,13 @@ export class AppComponent implements OnInit, AfterViewInit{
       if (this.currSelectedAnswer == this.questionGroup.rightAnswer) {
         elements[this.currSelectedAnswer - 1].classList.add('right');
         this.canContinue = true;
+        this.audioService.playRightAnswerAudio();
       }
       else {
         elements[this.currSelectedAnswer - 1].classList.add('wrong');
         elements[this.questionGroup.rightAnswer - 1].classList.add('right');
         this.canContinue = false;
+        this.audioService.playWrongAnswerAudio();
         this.gameOver(false);
       }
     }
@@ -268,6 +265,7 @@ export class AppComponent implements OnInit, AfterViewInit{
 
   gameOver( isWinner: boolean) {
     if (isWinner) {
+      this.audioService.playWinnerAudio();
     }
     else {
     }

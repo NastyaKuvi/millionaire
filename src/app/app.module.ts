@@ -9,6 +9,7 @@ import { HallAssistanceComponent } from './hints/hall-assistance/hall-assistance
 import { HallAssistanceService } from './hints/hall-assistance/hall-assistance.service';
 import { StartGameComponent } from './start-game/start-game.component';
 import { StartGameService } from './start-game/start-game.service';
+import { AudioService } from './audio.service';
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { StartGameService } from './start-game/start-game.service';
     HallAssistanceComponent,
     HallAssistanceService,
     StartGameComponent,
-    StartGameService
+    StartGameService,
+    AudioService
   ],
   bootstrap: [AppComponent]
 })
