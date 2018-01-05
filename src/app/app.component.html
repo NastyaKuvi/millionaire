@@ -1,5 +1,5 @@
 <app-start-game *ngIf="!isTimeToPlay"></app-start-game>
-<div class="main">
+<div class="main" *ngIf="isTimeToPlay">
   <div class="content">
     <app-timer *ngIf="IsTimerToShow"></app-timer>
     <app-hall-assistance *ngIf="IsHallToShow"></app-hall-assistance>
@@ -49,3 +49,10 @@
     <p>{{earnedPrize}}!</p>
   </form>
 </div>
+<audio id="audio-before-start" src="assets/audio/before_start.mp3"></audio>
+<audio id="audio-main1" src="assets/audio/main_1_10.mp3"></audio>
+<audio id="audio-main2" src="assets/audio/main_11_14.mp3"></audio>
+<audio id="audio-answered" src="assets/audio/answered.mp3"></audio>
+<audio id="audio-right" src="assets/audio/right.mp3"></audio>
+<audio id="audio-wrong" src="assets/audio/wrong.mp3"></audio>
+<audio id="audio-winner" src="assets/audio/winner.mp3"></audio>
