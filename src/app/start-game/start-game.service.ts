@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AudioService } from '../audio.service';
 
 var game1 = require('../resource/game1.json');
@@ -20,20 +20,20 @@ export class StartGameService {
   }
 
   startGame(num: string): any {
-    switch(num) {
-      case "1": {
+    switch (num) {
+      case '1': {
         this.setGame(game1);
         break;
       }
-      case "2": {
+      case '2': {
         this.setGame(game2);
         break;
       }
-      case "3": {
+      case '3': {
         this.setGame(game3);
         break;
       }
-      case "4": {
+      case '4': {
         this.setGame(game4);
         break;
       }

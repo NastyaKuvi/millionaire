@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef } from '@angular/core';
 import { HallAssistanceService } from './hall-assistance.service';
 
 @Component({
@@ -9,11 +9,13 @@ import { HallAssistanceService } from './hall-assistance.service';
 export class HallAssistanceComponent implements OnInit {
 
   constructor(
+    public element: ElementRef,
     private hallService: HallAssistanceService
   ) {
    }
 
   ngOnInit() {
+    this.element.nativeElement.classList.remove('used');
   }
 
   getDataSet(): any {

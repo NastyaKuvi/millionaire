@@ -1,16 +1,16 @@
 <app-start-game *ngIf="!isTimeToPlay"></app-start-game>
 <div class="main" *ngIf="isTimeToPlay">
   <div class="content">
-    <app-timer *ngIf="IsTimerToShow"></app-timer>
-    <app-hall-assistance *ngIf="IsHallToShow"></app-hall-assistance>
+    <app-timer class='hidden' #timerComp></app-timer>
+    <app-hall-assistance class='hidden' #hallAssist></app-hall-assistance>
     <div class="hints">
-      <button class="hint">
+      <button class="hint" #hinthalf>
         <i class="hint-ico hint-ico-half"></i>
       </button>
-      <button class="hint">
+      <button class="hint" #hintpeople>
           <i class="hint-ico hint-ico-people"></i>
       </button>
-      <button class="hint">
+      <button class="hint" #hintring>
           <i class="hint-ico hint-ico-ring"></i>
       </button>
     </div>

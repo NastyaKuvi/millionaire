@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef } from '@angular/core';
 import { TimerService } from './timer.service';
 
 @Component({
@@ -9,11 +9,14 @@ import { TimerService } from './timer.service';
 export class TimerComponent implements OnInit {
 
   constructor(
+    public element: ElementRef,
     private timerService: TimerService
   ) {
   }
 
   ngOnInit() {
+    this.element.nativeElement.classList.remove('used');
+    this.timerService.resetTimer();
     this.getRemainingTime();
   }
 

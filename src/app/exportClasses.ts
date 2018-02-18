@@ -2,9 +2,9 @@ export class QuestionGroup {
   num: number;
   question: string;
   answer1: string;
-  answer2:string;
-  answer3:string;
-  answer4:string;
+  answer2: string;
+  answer3: string;
+  answer4: string;
   rightAnswer: number;
   constructor() {
     this.num = 0;
@@ -15,4 +15,4 @@ export class QuestionGroup {
     this.answer4 = '';
     this.rightAnswer = 0;
   }
-};
+}

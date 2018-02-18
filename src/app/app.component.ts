@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, AfterViewInit } from '@angular/core';
+import { Component, HostListener, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import {Http} from '@angular/http';
 import { element } from 'protractor';
 import { TimerService } from './hints/timer/timer.service';
@@ -6,13 +6,20 @@ import { HallAssistanceService } from './hints/hall-assistance/hall-assistance.s
 import { StartGameService } from './start-game/start-game.service';
 import { QuestionGroup } from './exportClasses';
 import { AudioService } from './audio.service';
+import { TimerComponent } from './hints/timer/timer.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit, AfterViewInit{
+export class AppComponent implements OnInit, AfterViewInit {
+
+  @ViewChild('hinthalf') hintHalf: ElementRef;
+  @ViewChild('hintpeople') hintPeople: ElementRef;
+  @ViewChild('hintring') hintRing: ElementRef;
+  @ViewChild('hallAssist', { read: ElementRef }) hallAssist: ElementRef;
+  @ViewChild('timerComp', { read: ElementRef }) timerComp: ElementRef;
 
   title: string;
   questionGroup: QuestionGroup;
@@ -23,9 +30,8 @@ export class AppComponent implements OnInit, AfterViewInit{
   earnedPrize: string;
   fireProofPrizes: any;
   isToShowGameOverForm: boolean;
-  IsTimerToShow: boolean;
-  IsHallToShow: boolean;
   isTimeToPlay: boolean;
+  isBlockedQuestions: boolean;
 
   game: any = {};
 
@@ -35,8 +41,8 @@ export class AppComponent implements OnInit, AfterViewInit{
     private startService: StartGameService,
     private audioService: AudioService
   ) {
-    this.startService.game$.subscribe((game)=> {
-      if(Object.keys(game).length == 0) {
+    this.startService.game$.subscribe((game) => {
+      if (Object.keys(game).length === 0) {
         return;
       }
       this.title = game.title;
@@ -46,25 +52,51 @@ export class AppComponent implements OnInit, AfterViewInit{
       this.setNextQuestionGroup(game.questions[0], 1);
       this.game = game;
       this.canContinue = false;
+      this.isBlockedQuestions = false;
+      this.currSelectedAnswer = 0;
 
-      let hints = document.getElementsByClassName("hint");
-      for(let i = 0; i < hints.length; i++) {
-        hints[i].classList.remove("used");
+      // TODO: Remove this when 50/50 component will be created
+      const hints = document.getElementsByClassName('hint');
+      for (let i = 0; i < hints.length; i++) {
+        hints[i].classList.remove('used');
       }
-    })
+    });
+
     this.questionGroup = new QuestionGroup();
     this.currSelectedAnswer = 0;
     this.canContinue = false;
     this.canCheck = false;
     this.fireProofPrizes = [1, 6, 11, 14];
     this.isToShowGameOverForm = false;
-    this.IsTimerToShow = false;
-    this.IsHallToShow = false;
     this.isTimeToPlay = false;
+    this.isBlockedQuestions = false;
   }
 
   ngOnInit() {
     this.audioService.initAudioService();
+
+    this.timer.activation$.subscribe((sub) => {
+      this.isBlockedQuestions = sub;
+      if (this.timerComp) {
+        if (sub) {
+        this.timerComp.nativeElement.classList.remove('hidden');
+        } else {
+          this.timerComp.nativeElement.classList.add('hidden');
+        }
+      }
+    });
+
+    this.hallService.activation$.subscribe((sub) => {
+      this.isBlockedQuestions = sub;
+      if (this.hallAssist) {
+        if (sub) {
+        this.hallAssist.nativeElement.classList.remove('hidden');
+        } else {
+          this.hallAssist.nativeElement.classList.add('hidden');
+        }
+      }
+    });
+
   }
 
   ngAfterViewInit() {
@@ -72,61 +104,64 @@ export class AppComponent implements OnInit, AfterViewInit{
 
   @HostListener('window:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    if(!this.isTimeToPlay) {
+    if (!this.isTimeToPlay) {
       return;
     }
 
-    console.log(event.key + "in app mode");
-    switch(event.key) {
-      case "1":
-      case "2":
-      case "3":
-      case "4": {
-        if (!this.isToShowGameOverForm) {
+    console.log(event.key + 'in app mode');
+    switch (event.key) {
+      case '1':
+      case '2':
+      case '3':
+      case '4': {
+        if (!this.isToShowGameOverForm && !this.isBlockedQuestions) {
           this.selectAnswer(event.key);
         }
         break;
       }
-      case "Enter": {
+      case 'Enter': {
         if (!this.isToShowGameOverForm) {
-          this.checkAnswer();
+          if (!this.isBlockedQuestions) {
+            this.checkAnswer();
+          } else {
+            if (this.timer.isTimerStarted()) {
+              this.timer.stopTimer();
+            } else {
+              this.hallService.hide();
+            }
+          }
         }
         break;
       }
 
-      case "5": {
-        if (!this.isToShowGameOverForm) {
-          let hint = document.getElementsByClassName("hint")[0];
-          if(!hint.classList.contains("used")) {
-            hint.classList.add("selected");
+      case '5': {
+        if (!this.isToShowGameOverForm && !this.isBlockedQuestions) {
+          if (!this.hintHalf.nativeElement.classList.contains('used')) {
             this.callHalfHint();
-            hint.classList.add("used");
-            hint.classList.remove("selected");
+            this.hintHalf.nativeElement.classList.add('used');
           }
         }
         break;
       }
-      case "6": {
-        if (!this.isToShowGameOverForm) {
-          let hint = document.getElementsByClassName("hint")[1];
-          if(!hint.classList.contains("used")) {
-            this.callPeopleHint();
-            hint.classList.add("used");
+      case '6': {
+        if (!this.isToShowGameOverForm && !this.isBlockedQuestions) {
+          if (!this.hintPeople.nativeElement.classList.contains('used')) {
+            this.hallService.show();
+            this.hintPeople.nativeElement.classList.add('used');
           }
         }
         break;
       }
-      case "7": {
-        if (!this.isToShowGameOverForm) {
-          let hint = document.getElementsByClassName("hint")[2];
-          if(!hint.classList.contains("used")) {
-            this.callRingHint();
-            hint.classList.add("used");
+      case '7': {
+        if (!this.isToShowGameOverForm && !this.isBlockedQuestions) {
+          if (!this.hintRing.nativeElement.classList.contains('used')) {
+            this.timer.startTimer();
+            this.hintRing.nativeElement.classList.add('used');
           }
         }
         break;
       }
-      case " ": {
+      case ' ': {
         this.isToShowGameOverForm = false;
         this.isTimeToPlay = false;
         this.audioService.playBeforeStartAudio();
@@ -135,69 +170,59 @@ export class AppComponent implements OnInit, AfterViewInit{
   }
 
   randomInteger(min, max) {
-    var rand = min + Math.random() * (max + 1 - min);
+    let rand = min + Math.random() * (max + 1 - min);
     rand = Math.floor(rand);
     return rand;
   }
 
   callHalfHint() {
-    let answerElems = document.getElementsByClassName("answer-container");
-    let a = [1,2,3,4];
+    const answerElems = document.getElementsByClassName('answer-container');
+    const a = [1, 2, 3, 4];
     a.splice(this.questionGroup.rightAnswer - 1, 1);
-    let r = this.randomInteger(0,2);
-    answerElems[a[r] - 1].classList.add("hidden");
-    let temp = a[0];
+    let r = this.randomInteger(0, 2);
+    answerElems[a[r] - 1].classList.add('hidden');
+    const temp = a[0];
     a[0] = a[r];
     a[r] = temp;
 
-    r = this.randomInteger(1,2);
-    answerElems[a[r] - 1].classList.add("hidden");
-  }
-
-  callPeopleHint() {
-    this.IsHallToShow = true;
-    this.audioService.playHintHallAudio();
-  }
-
-  callRingHint() {
-    this.IsTimerToShow = true;
+    r = this.randomInteger(1, 2);
+    answerElems[a[r] - 1].classList.add('hidden');
   }
 
   goToTheNextQuestion() {
-    if (this.questionGroup.num == 14) {
+    this.currSelectedAnswer = 0;
+    if (this.questionGroup.num === 14) {
       this.earnedPrize = this.prizes[0];
       this.gameOver(true);
-    }
-    else if (this.canContinue) {
+    } else if (this.canContinue) {
       this.setNextQuestionGroup(this.game.questions[this.questionGroup.num], this.questionGroup.num + 1);
       this.canContinue = false;
       if (this.questionGroup.num < 11) {
         this.audioService.playMainFirstAudio();
-      }
-      else {
+      } else {
         this.audioService.playMainSecondAudio();
       }
     }
   }
 
   getIsCurrentPrize(prize: any) {
-    let curIndex = this.prizes.length - this.questionGroup.num;
+    const curIndex = this.prizes.length - this.questionGroup.num;
 
-    if (this.questionGroup.num == 7 || this.questionGroup.num == 12) {
+    if (this.questionGroup.num === 7 || this.questionGroup.num === 12) {
       this.earnedPrize = this.prizes[curIndex + 1];
     }
-    return prize == this.prizes[curIndex];
+    return prize === this.prizes[curIndex];
   }
 
   setNextQuestionGroup(group: any, qNum: number) {
-    let elemClass = "answer";
-    let elements = document.getElementsByClassName(elemClass);
-    for(let i = 0; i < elements.length; i++) {
-      let elem = elements[i];
+    const elemClass = 'answer';
+    const elements = document.getElementsByClassName(elemClass);
+    for (let i = 0; i < elements.length; i++) {
+      const elem = elements[i];
       elem.classList.remove('selected');
       elem.classList.remove('right');
       elem.classList.remove('wrong');
-      elem.getElementsByClassName("answer-container")[0].classList.remove('hidden');
+      elem.getElementsByClassName('answer-container')[0].classList.remove('hidden');
     }
 
     this.questionGroup.num = qNum;
@@ -206,53 +231,39 @@ export class AppComponent implements OnInit, AfterViewInit{
     this.questionGroup.answer2 = group.answer2;
     this.questionGroup.answer3 = group.answer3;
     this.questionGroup.answer4 = group.answer4;
-    this.questionGroup.rightAnswer = group.right;
+    this.questionGroup.rightAnswer = parseInt(group.right, 10);
   }
 
   selectAnswer(number: string) {
-    if (!this.canContinue && !this.IsTimerToShow) {
-      let elemClass = "answer";
-      let elements = document.getElementsByClassName(elemClass);
-      for(let i = 0; i < elements.length; i++) {
-        let elem = elements[i];
-        if(elem.classList.contains(elemClass + number) &&
-           !elem.getElementsByClassName("answer-container")[0].classList.contains('hidden')) {
+    if (!this.canContinue && this.currSelectedAnswer === 0) {
+      const elemClass = 'answer';
+      const elements = document.getElementsByClassName(elemClass);
+      for (let i = 0; i < elements.length; i++) {
+        const elem = elements[i];
+        if (elem.classList.contains(elemClass + number) &&
+           !elem.getElementsByClassName('answer-container')[0].classList.contains('hidden')) {
           elem.classList.add('selected');
           this.currSelectedAnswer = i + 1;
-        }
-        else {
+          this.audioService.playAnsweredAudio();
+        } else {
           elem.classList.remove('selected');
         }
       }
-      this.audioService.playAnsweredAudio();
     }
   }
 
   checkAnswer() {
-    if (this.IsTimerToShow && !this.timer.isTimerStarted()) {
-      this.timer.startTimer();
-    }
-    else if (this.timer.isTimerStarted()) {
-      this.timer.stopTimer();
-      this.IsTimerToShow = false;
-    }
-    else if (this.IsHallToShow) {
-      this.IsHallToShow = false;
-      this.audioService.playMainAudio();
-    }
-    else if (this.canContinue) {
+    if (this.canContinue) {
       this.goToTheNextQuestion();
-    }
-    else {
-      let elements = document.getElementsByClassName("answer");
+    } else if (this.currSelectedAnswer !== 0) {
+      const elements = document.getElementsByClassName('answer');
 
       elements[this.currSelectedAnswer - 1].classList.remove('selected');
-      if (this.currSelectedAnswer == this.questionGroup.rightAnswer) {
+      if (this.currSelectedAnswer === this.questionGroup.rightAnswer) {
         elements[this.currSelectedAnswer - 1].classList.add('right');
         this.canContinue = true;
         this.audioService.playRightAnswerAudio();
-      }
-      else {
+      } else {
         elements[this.currSelectedAnswer - 1].classList.add('wrong');
         elements[this.questionGroup.rightAnswer - 1].classList.add('right');
         this.canContinue = false;
@@ -266,8 +277,7 @@ export class AppComponent implements OnInit, AfterViewInit{
   gameOver( isWinner: boolean) {
     if (isWinner) {
       this.audioService.playWinnerAudio();
-    }
-    else {
+    } else {
     }
 
     this.isToShowGameOverForm = true;
